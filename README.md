@@ -100,7 +100,7 @@ supabase/migrations/
 
 ## Disclaimer
 
-RSS and third-party market data are **informational only**, not investment advice. Verify material facts before acting.
+RSS and third-party market data are **informational only**, not investment advice. Verify material facts before acting. This is still a work in progress.
 
 ## License
 
