@@ -80,52 +80,60 @@ export default async function DashboardArchivePage({ searchParams }: Props) {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-4xl pb-12">
       <AutoRefresh everyMs={300000} />
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+
+      <div className="divide-y divide-[var(--border)]">
+        <header className="flex flex-wrap items-start justify-between gap-4 pb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-white">Archive</h1>
-            <p className="mt-2 max-w-2xl text-sm text-[var(--muted)]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--faint)]">Archive</p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
+              Past data
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
               Past timeline and headlines that no longer show on the main dashboard, usually about 3–30 days
               back.
             </p>
           </div>
           <Link
             href="/dashboard"
-            className="shrink-0 rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-sm font-medium text-white transition hover:border-white/25 hover:bg-white/[0.08]"
+            className="shrink-0 text-sm font-medium text-[var(--accent)] hover:text-[var(--accent-muted)]"
           >
             ← Dashboard
           </Link>
+        </header>
+
+        <div className="py-8">
+          <ArchiveDateToolbar
+            key={`${bounds.eventsFromMs}-${bounds.eventsToMs}-${bounds.newsFromMs}-${bounds.newsToMs}`}
+            eventsFromYmd={toYmdUtc(bounds.eventsFromMs)}
+            eventsToYmd={toYmdUtc(bounds.eventsToMs)}
+            newsFromYmd={toYmdUtc(bounds.newsFromMs)}
+            newsToYmd={toYmdUtc(bounds.newsToMs)}
+          />
         </div>
+
+        <section className="space-y-6 py-8 pt-2">
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06] sm:p-7">
+            <DashboardTimelineTabs
+              events={pastEvents}
+              watchlistItems={items ?? []}
+              perPage={2}
+              pastArchiveMode
+              sectionTitle="Past timeline"
+              readMoreUrlsByEventId={readMoreUrlsByEventId}
+            />
+          </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06] sm:p-7">
+            <NewsBriefing
+              title="Archived news"
+              articles={archivedNews}
+              itemsPerPage={2}
+              emptyHintTickers="No watchlist-tagged headlines in this range. Try All, widen dates, or check back later."
+            />
+          </div>
+        </section>
       </div>
-
-      <ArchiveDateToolbar
-        key={`${bounds.eventsFromMs}-${bounds.eventsToMs}-${bounds.newsFromMs}-${bounds.newsToMs}`}
-        eventsFromYmd={toYmdUtc(bounds.eventsFromMs)}
-        eventsToYmd={toYmdUtc(bounds.eventsToMs)}
-        newsFromYmd={toYmdUtc(bounds.newsFromMs)}
-        newsToYmd={toYmdUtc(bounds.newsToMs)}
-      />
-
-      <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
-        <DashboardTimelineTabs
-          events={pastEvents}
-          watchlistItems={items ?? []}
-          perPage={2}
-          pastArchiveMode
-          sectionTitle="Past timeline"
-          sectionSubtitle="Read coverage opens the top matching article or a news search. Use the arrows to page through."
-          readMoreUrlsByEventId={readMoreUrlsByEventId}
-        />
-      </section>
-
-      <NewsBriefing
-        title="Archived news"
-        articles={archivedNews}
-        itemsPerPage={2}
-        emptyHintTickers="No watchlist-tagged headlines in this range. Try All, widen dates, or check back later."
-      />
     </div>
   );
 }

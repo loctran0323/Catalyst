@@ -504,96 +504,92 @@ export function MarketMapExplorer({ tree }: { tree: MarketMapRoot }) {
     <div className="space-y-6">
       <AutoRefresh everyMs={900000} />
 
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-white">Market map</h1>
-            <p className="mt-2 max-w-xl text-sm text-[var(--muted)]">
-              Quotes are delayed; not financial advice.
-            </p>
-          </div>
-        </div>
+      <header>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--faint)]">Map</p>
+        <h1 className="mt-1 text-2xl font-semibold text-white">Market map</h1>
+        <p className="mt-2 max-w-xl text-sm text-[var(--muted)]">
+          Quotes are delayed; not financial advice.
+        </p>
+      </header>
 
-        <div className="mt-6 min-h-[140px] max-w-full rounded-xl border border-white/10 bg-[var(--background)]/60 p-4">
-          {!selected?.symbol ? (
-            <p className="text-sm text-[var(--muted)]">
-              Click a stock in the map to see headlines and an AI-style read on why it
-              might be moving.
-            </p>
-          ) : (
-            <>
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <h2 className="text-xl font-semibold text-white">
-                  {selected.shortName ?? selected.symbol}
-                </h2>
-                <span className="font-mono text-sm text-[var(--muted)]">{selected.symbol}</span>
-                <span className="text-sm text-[var(--muted)]">
-                  {selected.price != null ? (
-                    <span className="font-medium text-white">${selected.price.toFixed(2)}</span>
-                  ) : (
-                    <span>—</span>
-                  )}
-                </span>
-                <span className={`text-sm font-semibold ${moveColor}`}>
-                  {typeof selected.changePct === "number" ? (
-                    <>
-                      {selected.changePct >= 0 ? "+" : ""}
-                      {selected.changePct.toFixed(2)}%
-                    </>
-                  ) : (
-                    "—"
-                  )}
-                  <span className="ml-1 text-xs font-normal text-[var(--muted)]">vs prior close</span>
-                </span>
-              </div>
-              {loading && (
-                <p className="mt-3 text-sm text-[var(--muted)]">Loading headlines…</p>
-              )}
-              {error && (
-                <p className="mt-3 text-sm text-red-400" role="alert">
-                  {error}
-                </p>
-              )}
-              {!loading && news.length > 0 && (
-                <ul className="mt-4 max-h-[min(52vh,480px)] space-y-3 overflow-y-auto overflow-x-hidden pr-1">
-                  {news.slice(0, 6).map((a) => (
-                    <li
-                      key={a.id}
-                      className="min-w-0 max-w-full rounded-lg border border-white/10 bg-white/[0.03] p-3"
+      <div className="space-y-3">
+        {!selected?.symbol ? (
+          <p className="max-w-full text-sm text-[var(--muted)]">
+            Click a stock in the map to see headlines and an AI-style read on why it might be moving.
+          </p>
+        ) : (
+          <div className="min-h-[140px] max-w-full">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <h2 className="text-xl font-semibold text-white">
+                {selected.shortName ?? selected.symbol}
+              </h2>
+              <span className="font-mono text-sm text-[var(--muted)]">{selected.symbol}</span>
+              <span className="text-sm text-[var(--muted)]">
+                {selected.price != null ? (
+                  <span className="font-medium text-white">${selected.price.toFixed(2)}</span>
+                ) : (
+                  <span>—</span>
+                )}
+              </span>
+              <span className={`text-sm font-semibold ${moveColor}`}>
+                {typeof selected.changePct === "number" ? (
+                  <>
+                    {selected.changePct >= 0 ? "+" : ""}
+                    {selected.changePct.toFixed(2)}%
+                  </>
+                ) : (
+                  "—"
+                )}
+                <span className="ml-1 text-xs font-normal text-[var(--muted)]">vs prior close</span>
+              </span>
+            </div>
+            {loading && (
+              <p className="mt-3 text-sm text-[var(--muted)]">Loading headlines…</p>
+            )}
+            {error && (
+              <p className="mt-3 text-sm text-red-400" role="alert">
+                {error}
+              </p>
+            )}
+            {!loading && news.length > 0 && (
+              <ul className="mt-4 max-h-[min(52vh,480px)] space-y-3 overflow-y-auto overflow-x-hidden pr-1">
+                {news.slice(0, 6).map((a) => (
+                  <li
+                    key={a.id}
+                    className="min-w-0 max-w-full rounded-lg border border-white/10 bg-white/[0.03] p-3"
+                  >
+                    <p className="line-clamp-2 break-words text-sm font-medium text-white">
+                      {a.title}
+                    </p>
+                    <p className="mt-2 line-clamp-3 break-words text-sm leading-relaxed text-[var(--muted)]">
+                      {a.summary}
+                    </p>
+                    <a
+                      href={a.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 inline-block text-xs font-medium text-[var(--accent)] hover:underline"
                     >
-                      <p className="line-clamp-2 break-words text-sm font-medium text-white">
-                        {a.title}
-                      </p>
-                      <p className="mt-2 line-clamp-3 break-words text-sm leading-relaxed text-[var(--muted)]">
-                        {a.summary}
-                      </p>
-                      <a
-                        href={a.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-3 inline-block text-xs font-medium text-[var(--accent)] hover:underline"
-                      >
-                        Original article →
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {!loading && !error && news.length === 0 && (
-                <p className="mt-3 text-sm text-[var(--muted)]">
-                  No headlines matched this symbol yet. Try again later.
-                </p>
-              )}
-            </>
-          )}
-        </div>
+                      Original article →
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {!loading && !error && news.length === 0 && (
+              <p className="mt-3 text-sm text-[var(--muted)]">
+                No headlines matched this symbol yet. Try again later.
+              </p>
+            )}
+          </div>
+        )}
 
         <div
           ref={mapShellRef}
           className={
             isFullscreen
               ? "flex h-screen max-h-[100dvh] min-h-0 w-full flex-col bg-[var(--background)] p-4"
-              : "mt-6 flex flex-col rounded-xl border border-white/15 bg-[var(--background)]/90 p-3"
+              : "flex flex-col rounded-xl border border-white/15 bg-[var(--background)]/90 p-3"
           }
         >
           <MapViewToolbar

@@ -1,29 +1,17 @@
 import Link from "next/link";
 import { AutoRefresh } from "@/components/auto-refresh";
-import { DashboardDateToolbar } from "@/components/dashboard-date-toolbar";
 import { DashboardQueryError } from "@/components/dashboard-query-error";
 import { DashboardTimelineTabs } from "@/components/dashboard-timeline-tabs";
 import { NewsBriefing } from "@/components/news-briefing";
 import { WatchlistPanel } from "@/components/watchlist-panel";
-import {
-  filterArticlesByPublishedRange,
-  filterEventsByEventDateRange,
-  parseDashboardSearchParams,
-} from "@/lib/archive-range";
 import { fetchMergedDashboardEvents } from "@/lib/events";
 import { getNewsBriefing } from "@/lib/news";
 import { createClient } from "@/lib/supabase/server";
+import { formatDateHeading } from "@/lib/date-utils";
 
-/** Re-run this page on every `router.refresh()` — avoids stale RSC payload when polling for news/timeline. */
 export const dynamic = "force-dynamic";
 
-type Props = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
-
-export default async function DashboardPage({ searchParams }: Props) {
-  const sp = await searchParams;
-  const dashDates = parseDashboardSearchParams(sp);
+export default async function DashboardPage() {
   const supabase = await createClient();
 
   const { data: watchlists, error: wErr } = await supabase
@@ -55,82 +43,73 @@ export default async function DashboardPage({ searchParams }: Props) {
     return <DashboardQueryError context="Loading watchlist tickers" err={iErr} />;
   }
 
-  let events;
   const tickers = (items ?? []).map((i) => i.ticker);
+
+  let events;
   try {
     events = await fetchMergedDashboardEvents(supabase, tickers);
   } catch (e) {
     const err = e as { message?: string; code?: string };
-    return <DashboardQueryError context="Loading events" err={err} />;
+    return <DashboardQueryError context="Loading timeline" err={err} />;
   }
 
-  if (dashDates.timelineFilter) {
-    events = filterEventsByEventDateRange(
-      events,
-      dashDates.timelineFilter.fromMs,
-      dashDates.timelineFilter.toMs,
-    );
-  }
-
-  let news = await getNewsBriefing({ tickers, limit: 72 });
-  if (dashDates.newsFilter) {
-    news = filterArticlesByPublishedRange(
-      news,
-      dashDates.newsFilter.fromMs,
-      dashDates.newsFilter.toMs,
-    );
-  }
-
-  const statCards = [
-    { label: "Tickers", value: String(tickers.length) },
-    { label: "Timeline items", value: String(events.length) },
-    { label: "News headlines", value: String(news.length) },
-  ];
+  const news = await getNewsBriefing({ tickers, limit: 72 });
+  const serverFetchedAt = new Date().toISOString();
+  const todayHeading = formatDateHeading(new Date());
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-4xl pb-12">
       <AutoRefresh everyMs={300000} />
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
-        <h1 className="text-2xl font-semibold text-white">Market dashboard</h1>
-        <div className="mt-2 max-w-full overflow-x-auto">
-          <p className="whitespace-nowrap text-sm text-[var(--muted)]">
-            Your watchlist shapes which ticker-tagged headlines and events you see.{" "}
-            <Link href="/dashboard/archive" className="text-[var(--accent)] hover:underline">
-              More and older posts are on Archive.
-            </Link>
+
+      <div className="divide-y divide-[var(--border)]">
+        <header className="pb-8">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--faint)]">Dashboard</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
+            {todayHeading}
+          </h1>
+          <div className="mt-2 w-full overflow-x-auto [-webkit-overflow-scrolling:touch]">
+            <p className="w-max whitespace-nowrap text-sm text-[var(--muted)]">
+              Watchlist, upcoming macro and ticker catalysts, and a ranked news briefing.{" "}
+              <Link href="/dashboard/archive" className="font-medium text-[var(--accent)] hover:underline">
+                Archive
+              </Link>{" "}
+              holds older headlines and past events.
+            </p>
+          </div>
+          <p className="mt-3 text-sm text-[var(--muted)]">
+            <span className="font-medium tabular-nums text-[var(--foreground)]">{events.length}</span> timeline
+            <span className="mx-2 text-[var(--faint)]">·</span>
+            <span className="font-medium tabular-nums text-[var(--foreground)]">{news.length}</span> headlines
+            <span className="mx-2 text-[var(--faint)]">·</span>
+            <span className="font-medium tabular-nums text-[var(--foreground)]">{items?.length ?? 0}</span>{" "}
+            watchlist
           </p>
-        </div>
-        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {statCards.map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              <p className="text-xs uppercase tracking-wide text-[var(--muted)]">{stat.label}</p>
-              <p className="mt-1 text-2xl font-semibold text-white">{stat.value}</p>
-            </div>
-          ))}
-        </div>
+        </header>
+
+        <section className="py-8">
+          <h2 className="text-base font-semibold text-[var(--foreground)]">Watchlist</h2>
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            Symbols drive ticker-specific timeline rows and headline matching.
+          </p>
+          <div className="mt-4">
+            <WatchlistPanel watchlistId={watchlist.id} items={items ?? []} />
+          </div>
+        </section>
+
+        <section className="space-y-6 py-8 pt-2">
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06] sm:p-7">
+            <DashboardTimelineTabs
+              events={events}
+              watchlistItems={items ?? []}
+              perPage={3}
+              dataFetchedAt={serverFetchedAt}
+            />
+          </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06] sm:p-7">
+            <NewsBriefing articles={news} itemsPerPage={4} dataFetchedAt={serverFetchedAt} />
+          </div>
+        </section>
       </div>
-
-      <DashboardDateToolbar
-        key={`${dashDates.toolbar.eventsFromYmd}-${dashDates.toolbar.eventsToYmd}-${dashDates.toolbar.newsFromYmd}-${dashDates.toolbar.newsToYmd}`}
-        eventsFromYmd={dashDates.toolbar.eventsFromYmd}
-        eventsToYmd={dashDates.toolbar.eventsToYmd}
-        newsFromYmd={dashDates.toolbar.newsFromYmd}
-        newsToYmd={dashDates.toolbar.newsToYmd}
-      />
-
-      <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
-        <h2 className="text-base font-semibold text-white">Watchlist</h2>
-        <p className="mt-0.5 text-xs text-[var(--muted)]">
-          Drives ticker news and timeline rows. Click × on a chip to remove.
-        </p>
-        <WatchlistPanel watchlistId={watchlist.id} items={items ?? []} />
-      </section>
-
-      <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
-        <DashboardTimelineTabs events={events} watchlistItems={items ?? []} perPage={2} />
-      </section>
-
-      <NewsBriefing articles={news} itemsPerPage={2} />
     </div>
   );
 }

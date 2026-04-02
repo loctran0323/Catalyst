@@ -1,80 +1,80 @@
 import type { MarketEvent } from "@/types/database";
 
-const typeStyles: Record<string, string> = {
-  earnings: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30",
-  macro: "bg-amber-500/15 text-amber-200 ring-amber-500/30",
-  catalyst: "bg-violet-500/15 text-violet-200 ring-violet-500/30",
+type EventType = MarketEvent["event_type"];
+
+const typeStyles: Record<
+  EventType,
+  { bar: string; badge: string; label: string }
+> = {
+  macro: {
+    bar: "bg-sky-400",
+    badge: "border-sky-400/35 bg-sky-500/15 text-sky-100",
+    label: "Macro",
+  },
+  earnings: {
+    bar: "bg-violet-400",
+    badge: "border-violet-400/35 bg-violet-500/15 text-violet-100",
+    label: "Earnings",
+  },
+  catalyst: {
+    bar: "bg-amber-400",
+    badge: "border-amber-400/35 bg-amber-500/12 text-amber-100",
+    label: "Catalyst",
+  },
 };
 
-export function EventCard({
-  event,
-  showTickerBadge = false,
-  readMoreUrl,
-}: {
+function formatEventWhen(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "TBD";
+  return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+}
+
+type Props = {
   event: MarketEvent;
-  /** Show symbol pill (Tickers timeline tab only). */
   showTickerBadge?: boolean;
-  /** Past archive: opens coverage in a new tab (article or news search). */
   readMoreUrl?: string | null;
-}) {
-  const when = new Date(event.event_date);
-  const typeClass = typeStyles[event.event_type] ?? "bg-zinc-500/15 text-zinc-300 ring-zinc-500/30";
+};
+
+export function EventCard({ event, showTickerBadge = true, readMoreUrl }: Props) {
+  const styles = typeStyles[event.event_type];
+  const ticker = event.ticker?.trim();
 
   return (
-    <article className="rounded-xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-[var(--accent)]/40" data-event-id={event.id}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="text-lg font-semibold text-white">{event.title}</h3>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            {when.toLocaleString(undefined, {
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-            })}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
+    <article className="flex gap-0 py-5">
+      <div className={`w-1 shrink-0 rounded-full ${styles.bar}`} aria-hidden />
+      <div className="min-w-0 flex-1 pl-4 sm:pl-5">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--faint)]">
+          <span className="font-mono tabular-nums">{formatEventWhen(event.event_date)}</span>
           <span
-            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${typeClass}`}
+            className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${styles.badge}`}
           >
-            {event.event_type}
+            {styles.label}
           </span>
-          {showTickerBadge && event.ticker && (
-            <span className="rounded-full bg-white/5 px-2.5 py-0.5 text-xs font-medium text-[var(--foreground)] ring-1 ring-inset ring-white/10">
-              <span className="font-mono">{event.ticker}</span>
+          {showTickerBadge && ticker ? (
+            <span className="rounded-md border border-[var(--border)] bg-[var(--surface-highlight)] px-2 py-0.5 font-semibold text-[var(--foreground)]">
+              {ticker}
             </span>
-          )}
+          ) : null}
         </div>
-      </div>
-      {readMoreUrl ? (
-        <div className="mt-4">
-          <a
-            href={readMoreUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--accent)] hover:underline"
-          >
-            Read coverage
-            <span aria-hidden className="text-xs opacity-80">
-              ↗
-            </span>
-          </a>
-        </div>
-      ) : null}
-      <div className="mt-4 space-y-3 text-sm leading-relaxed">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-            Why it matters
-          </p>
-          <p className="mt-1 text-[var(--foreground)]">{event.why_it_matters}</p>
-        </div>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-            What to watch
-          </p>
-          <p className="mt-1 text-[var(--foreground)]">{event.watch_for}</p>
+        <h3 className="mt-3 text-lg font-semibold leading-snug text-[var(--foreground)]">
+          {event.title}
+        </h3>
+        <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">{event.why_it_matters}</p>
+        <p className="mt-3 text-sm leading-relaxed text-[var(--foreground)]/90">
+          <span className="font-medium text-[var(--foreground)]">Watch for: </span>
+          {event.watch_for}
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          {readMoreUrl ? (
+            <a
+              href={readMoreUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm font-medium text-[var(--accent)] hover:text-[var(--accent-muted)]"
+            >
+              Read coverage →
+            </a>
+          ) : null}
         </div>
       </div>
     </article>

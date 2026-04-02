@@ -87,11 +87,11 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-8">
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
-        <h1 className="text-2xl font-semibold text-white">Home</h1>
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
-          Use dashboard for watchlist headlines, upcoming catalysts, and your full workspace, or map for a
-          treemap of large-cap movers organized from sector to industry.
+      <header>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--faint)]">Home</p>
+        <h1 className="mt-1 text-2xl font-semibold text-white">Market snapshot</h1>
+        <p className="mt-4 max-w-3xl text-xs leading-snug text-[var(--muted)] sm:text-sm">
+          Watchlists, catalysts, and workspace on the dashboard; large-cap sector treemap on the map.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Link href="/dashboard" className={heroActionClass}>
@@ -101,7 +101,7 @@ export default async function HomePage() {
             Open map
           </Link>
         </div>
-      </div>
+      </header>
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-8">
         <div className="min-w-0 flex-1 space-y-8">
@@ -113,12 +113,12 @@ export default async function HomePage() {
               {data.benchmarks.map((b) => (
                 <div
                   key={b.symbol}
-                  className="rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] px-3 py-2.5 sm:px-3.5 sm:py-3"
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 sm:px-3.5 sm:py-3"
                 >
                   <p className="line-clamp-2 min-h-[2rem] text-[11px] leading-snug text-[var(--muted)] sm:text-xs">
                     {b.label}
                   </p>
-                  <p className="mt-1 font-mono text-[10px] text-white/70 sm:text-xs">{b.symbol}</p>
+                  <p className="mt-1 font-mono text-[10px] font-medium text-white sm:text-xs">{b.symbol}</p>
                   <p className="mt-1.5 text-base font-semibold tabular-nums text-white sm:text-lg">
                     {formatPrice(b.price, b.symbol)}
                   </p>

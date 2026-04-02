@@ -11,7 +11,7 @@ import type { WatchlistItem } from "@/types/database";
 export const dynamic = "force-dynamic";
 
 const heroActionClass =
-  "inline-flex items-center rounded-md border border-white/[0.14] bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-white/90 transition hover:border-white/25 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/50";
+  "inline-flex items-center rounded-lg border border-[var(--border)] bg-[var(--surface-highlight)] px-3 py-2 text-xs font-medium text-[var(--foreground)] transition hover:border-[var(--accent)]/40 hover:bg-[var(--surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40";
 
 export default async function ExplorePage() {
   let isAuthenticated = false;
@@ -29,80 +29,85 @@ export default async function ExplorePage() {
   const fetchedAt = new Date().toISOString();
   const watchlistItems: WatchlistItem[] = [];
 
-  const statCards = [
-    { label: "Watchlist", value: "—" },
-    { label: "Timeline items", value: String(events.length) },
-    { label: "News headlines", value: String(news.length) },
-  ];
-
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-4xl pb-12">
       <AutoRefresh everyMs={300000} />
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
-        <h1 className="text-2xl font-semibold text-white">Explore</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
-          Browse the macro timeline, news briefing, and map without an account.{" "}
-          <Link href="/signup" className="text-[var(--accent)] hover:underline">
-            Sign up
-          </Link>{" "}
-          to save a watchlist and unlock ticker-specific timeline rows and ticker-tagged headlines. Use
-          dashboard for watchlist headlines, upcoming catalysts, and your full workspace, or map for a
-          treemap of large-cap movers organized from sector to industry.
-        </p>
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Link href="/dashboard" className={heroActionClass}>
-            Open dashboard
-          </Link>
-          <Link href={mapHref} className={heroActionClass}>
-            Open map
-          </Link>
-        </div>
-        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {statCards.map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              <p className="text-xs uppercase tracking-wide text-[var(--muted)]">{stat.label}</p>
-              <p className="mt-1 text-2xl font-semibold text-white">{stat.value}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-4 text-[10px] uppercase tracking-wide text-[var(--muted)]">
-          Last fetch{" "}
-          <span className="font-mono normal-case text-[var(--foreground)]">
-            {new Date(fetchedAt).toLocaleTimeString(undefined, {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            })}
-          </span>{" "}
-          · guest mode · macro timeline only · auto-refresh ~5 min
-        </p>
+
+      <div className="divide-y divide-[var(--border)]">
+        <header className="pb-8">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--faint)]">Explore</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
+            Macro timeline &amp; news
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
+            No account required for this view.{" "}
+            <Link href="/signup" className="font-medium text-[var(--accent)] hover:underline">
+              Sign up
+            </Link>{" "}
+            for a watchlist and the full dashboard.{" "}
+            <Link href={mapHref} className="font-medium text-[var(--accent)] hover:underline">
+              Map
+            </Link>{" "}
+            shows sector → industry movers.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link href="/dashboard" className={heroActionClass}>
+              Open dashboard
+            </Link>
+            <Link href={mapHref} className={heroActionClass}>
+              Open map
+            </Link>
+          </div>
+          <p className="mt-3 text-sm text-[var(--muted)]">
+            <span className="font-medium tabular-nums text-[var(--foreground)]">{events.length}</span>{" "}
+            timeline ·{" "}
+            <span className="font-medium tabular-nums text-[var(--foreground)]">{news.length}</span>{" "}
+            headlines · watchlist requires sign-in
+          </p>
+          <p className="mt-2 text-xs text-[var(--faint)]">
+            Last fetch{" "}
+            <span className="font-mono text-[var(--muted)]">
+              {new Date(fetchedAt).toLocaleTimeString(undefined, {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              })}
+            </span>
+            {" · "}
+            guest · refreshes about every 5 min
+          </p>
+        </header>
+
+        <section className="py-8">
+          <h2 className="text-base font-semibold text-[var(--foreground)]">Watchlist</h2>
+          <p className="mt-1 text-sm leading-relaxed text-[var(--muted)]">
+            Saving tickers needs an account.{" "}
+            <Link href="/login" className="font-medium text-[var(--accent)] hover:underline">
+              Log in
+            </Link>{" "}
+            or{" "}
+            <Link href="/signup" className="font-medium text-[var(--accent)] hover:underline">
+              sign up
+            </Link>{" "}
+            for the Tickers tab and matched headlines.
+          </p>
+        </section>
+
+        <section className="space-y-6 py-8 pt-2">
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06] sm:p-7">
+            <DashboardTimelineTabs
+              events={events}
+              watchlistItems={watchlistItems}
+              perPage={2}
+              guestMode
+              dataFetchedAt={fetchedAt}
+            />
+          </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06] sm:p-7">
+            <NewsBriefing articles={news} itemsPerPage={2} dataFetchedAt={fetchedAt} />
+          </div>
+        </section>
       </div>
-
-      <section className="rounded-2xl border border-amber-500/25 bg-amber-500/[0.06] p-4 sm:p-5">
-        <h2 className="text-base font-semibold text-white">Watchlist</h2>
-        <p className="mt-1 text-sm text-[var(--muted)]">
-          Saving tickers requires an account.{" "}
-          <Link href="/login" className="text-[var(--accent)] hover:underline">
-            Log in
-          </Link>{" "}
-          or{" "}
-          <Link href="/signup" className="text-[var(--accent)] hover:underline">
-            create a free account
-          </Link>{" "}
-          to build a list that powers the Tickers timeline tab and watchlist-matched news.
-        </p>
-      </section>
-
-      <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
-        <DashboardTimelineTabs
-          events={events}
-          watchlistItems={watchlistItems}
-          perPage={2}
-          guestMode
-        />
-      </section>
-
-      <NewsBriefing articles={news} itemsPerPage={2} />
     </div>
   );
 }

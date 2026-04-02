@@ -128,8 +128,7 @@ async function buildNewsArticleListInPublishedRange(
       if (!item.pubDate) return false;
       const t = Date.parse(item.pubDate);
       if (Number.isNaN(t)) return false;
-      if (t < publishedFromMs || t > publishedToMs) return false;
-      return isPublishedBeforeArchiveCutoff(item.pubDate);
+      return t >= publishedFromMs && t <= publishedToMs;
     })
     .slice(0, Math.max(0, summarizeCap));
 
@@ -184,7 +183,10 @@ export async function getArchivedNewsBriefing(params: {
   const tickers = [...new Set(params.tickers.map((t) => t.trim().toUpperCase()).filter(Boolean))];
   const limit = params.limit ?? 200;
   const hasAi = Boolean(process.env.OPENAI_API_KEY);
-  const summarizeCap = hasAi ? Math.min(100, Math.max(limit, 40)) : Math.min(220, Math.max(limit, 60));
+  /** Include enough RSS rows to fill the archive list (was capped too low vs `limit`). */
+  const summarizeCap = hasAi
+    ? Math.min(400, Math.max(limit * 2, 200))
+    : Math.min(500, Math.max(limit * 2, 240));
 
   const mapped = await buildNewsArticleListInPublishedRange(
     tickers,
@@ -193,10 +195,7 @@ export async function getArchivedNewsBriefing(params: {
     summarizeCap,
   );
 
-  return mapped
-    .filter((a) => isPublishedBeforeArchiveCutoff(a.publishedAt))
-    .sort((a, b) => toTime(b.publishedAt) - toTime(a.publishedAt))
-    .slice(0, limit);
+  return mapped.sort((a, b) => toTime(b.publishedAt) - toTime(a.publishedAt)).slice(0, limit);
 }
 
 /**
