@@ -15,8 +15,24 @@ type RssItem = {
   source: string;
 };
 
-/** Drop RSS items older than this to limit payload and “stale” news (not stored server-side). */
-const NEWS_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/** Main briefing: keep RSS items published within the last N days (older items move to archive view). */
+export const NEWS_VISIBLE_MAX_AGE_MS = 3 * MS_PER_DAY;
+
+/** Archive lists exclude items newer than this (no overlap with main briefing). */
+export function isPublishedBeforeArchiveCutoff(
+  pubDate: string | null,
+  nowMs = Date.now(),
+): boolean {
+  if (!pubDate) return false;
+  const t = Date.parse(pubDate);
+  if (Number.isNaN(t)) return false;
+  return nowMs - t > NEWS_VISIBLE_MAX_AGE_MS;
+}
+
+/** How far back to pull from feeds when building ranked lists (archive band uses overlap with visible). */
+const NEWS_RSS_FETCH_MAX_AGE_MS = 30 * MS_PER_DAY;
 
 function publishedWithinWindow(pubDate: string | null, maxAgeMs: number, now = Date.now()): boolean {
   if (!pubDate) return true;
@@ -70,22 +86,19 @@ const MACRO_KEYWORDS = [
   "durable goods",
 ];
 
-export async function getNewsBriefing(params: {
-  tickers: string[];
-  limit?: number;
-}): Promise<NewsArticle[]> {
-  const tickers = [...new Set(params.tickers.map((t) => t.trim().toUpperCase()).filter(Boolean))];
-  const limit = params.limit ?? 8;
-
-  const feedItems = await loadFeedItems();
+async function buildNewsArticleList(
+  tickers: string[],
+  candidateCap: number,
+): Promise<NewsArticle[]> {
+  const feedItems = await loadFeedItems(NEWS_RSS_FETCH_MAX_AGE_MS);
   const candidates = feedItems
     .map((item, rank) => toCandidate(item, tickers, rank))
     .filter((item): item is RssItem & { matchedTicker: string | null } => item !== null)
-    .slice(0, 48);
+    .slice(0, candidateCap);
 
   const summaries = await summarizeArticles(candidates);
 
-  const mapped = candidates.map((item, i) => ({
+  return candidates.map((item, i) => ({
     id: crypto.createHash("sha1").update(`${item.link}-${item.pubDate ?? ""}`).digest("hex"),
     source: item.source,
     title: item.title,
@@ -98,9 +111,91 @@ export async function getNewsBriefing(params: {
     marketImpactRationale:
       summaries[i]?.rationale ?? inferImpact(item).rationale,
   }));
+}
+
+/** Ranked RSS rows whose pubDate falls in [from, to] before summarization (cheaper + narrower than full merge). */
+async function buildNewsArticleListInPublishedRange(
+  tickers: string[],
+  publishedFromMs: number,
+  publishedToMs: number,
+  summarizeCap: number,
+): Promise<NewsArticle[]> {
+  const feedItems = await loadFeedItems(NEWS_RSS_FETCH_MAX_AGE_MS);
+  const candidates = feedItems
+    .map((item, rank) => toCandidate(item, tickers, rank))
+    .filter((item): item is RssItem & { matchedTicker: string | null } => item !== null)
+    .filter((item) => {
+      if (!item.pubDate) return false;
+      const t = Date.parse(item.pubDate);
+      if (Number.isNaN(t)) return false;
+      if (t < publishedFromMs || t > publishedToMs) return false;
+      return isPublishedBeforeArchiveCutoff(item.pubDate);
+    })
+    .slice(0, Math.max(0, summarizeCap));
+
+  const summaries = await summarizeArticles(candidates);
+
+  return candidates.map((item, i) => ({
+    id: crypto.createHash("sha1").update(`${item.link}-${item.pubDate ?? ""}`).digest("hex"),
+    source: item.source,
+    title: item.title,
+    url: item.link,
+    publishedAt: item.pubDate,
+    summary: sanitizePlainText(summaries[i]?.summary ?? fallbackSummary(item), 220),
+    matchedTicker: item.matchedTicker,
+    category: classifyCategory(item),
+    marketImpact: summaries[i]?.marketImpact ?? inferImpact(item).marketImpact,
+    marketImpactRationale:
+      summaries[i]?.rationale ?? inferImpact(item).rationale,
+  }));
+}
+
+export async function getNewsBriefing(params: {
+  tickers: string[];
+  limit?: number;
+  /** Cap how many RSS rows are summarized (default scales with limit). Use a small value for email digests. */
+  candidateCap?: number;
+}): Promise<NewsArticle[]> {
+  const tickers = [...new Set(params.tickers.map((t) => t.trim().toUpperCase()).filter(Boolean))];
+  const limit = params.limit ?? 8;
+  const candidateCap =
+    params.candidateCap ?? Math.max(120, Math.min(200, limit * 3));
+
+  const mapped = await buildNewsArticleList(
+    tickers,
+    Math.max(limit, Math.min(200, candidateCap)),
+  );
 
   return mapped
-    .filter((a) => publishedWithinWindow(a.publishedAt, NEWS_MAX_AGE_MS))
+    .filter((a) => publishedWithinWindow(a.publishedAt, NEWS_VISIBLE_MAX_AGE_MS))
+    .slice(0, limit);
+}
+
+/**
+ * Archive headlines in a chosen published-at window (RSS ~30d lookback). Summarization is capped
+ * separately to keep OpenAI payloads bounded; raise cap when `OPENAI_API_KEY` is unset (fallback only).
+ */
+export async function getArchivedNewsBriefing(params: {
+  tickers: string[];
+  limit?: number;
+  publishedFromMs: number;
+  publishedToMs: number;
+}): Promise<NewsArticle[]> {
+  const tickers = [...new Set(params.tickers.map((t) => t.trim().toUpperCase()).filter(Boolean))];
+  const limit = params.limit ?? 200;
+  const hasAi = Boolean(process.env.OPENAI_API_KEY);
+  const summarizeCap = hasAi ? Math.min(100, Math.max(limit, 40)) : Math.min(220, Math.max(limit, 60));
+
+  const mapped = await buildNewsArticleListInPublishedRange(
+    tickers,
+    params.publishedFromMs,
+    params.publishedToMs,
+    summarizeCap,
+  );
+
+  return mapped
+    .filter((a) => isPublishedBeforeArchiveCutoff(a.publishedAt))
+    .sort((a, b) => toTime(b.publishedAt) - toTime(a.publishedAt))
     .slice(0, limit);
 }
 
@@ -129,7 +224,7 @@ export async function getNewsForTicker(ticker: string, limit = 8): Promise<NewsA
   });
 
   const merged = dedupeByLink([...googleItems, ...fromFeeds])
-    .filter((item) => publishedWithinWindow(item.pubDate, NEWS_MAX_AGE_MS))
+    .filter((item) => publishedWithinWindow(item.pubDate, NEWS_RSS_FETCH_MAX_AGE_MS))
     .sort((a, b) => toTime(b.pubDate) - toTime(a.pubDate));
 
   const candidates = merged.slice(0, 14).map((item) => ({
@@ -154,7 +249,7 @@ export async function getNewsForTicker(ticker: string, limit = 8): Promise<NewsA
   }));
 
   return mapped
-    .filter((a) => publishedWithinWindow(a.publishedAt, NEWS_MAX_AGE_MS))
+    .filter((a) => publishedWithinWindow(a.publishedAt, NEWS_VISIBLE_MAX_AGE_MS))
     .slice(0, limit);
 }
 
@@ -179,7 +274,7 @@ function dedupeByLink(items: RssItem[]): RssItem[] {
   });
 }
 
-async function loadFeedItems(): Promise<RssItem[]> {
+async function loadFeedItems(maxAgeMs: number = NEWS_RSS_FETCH_MAX_AGE_MS): Promise<RssItem[]> {
   const all = await Promise.all(
     FEEDS.map(async (feed) => {
       try {
@@ -195,7 +290,7 @@ async function loadFeedItems(): Promise<RssItem[]> {
 
   return all
     .flat()
-    .filter((item) => publishedWithinWindow(item.pubDate, NEWS_MAX_AGE_MS))
+    .filter((item) => publishedWithinWindow(item.pubDate, maxAgeMs))
     .sort((a, b) => toTime(b.pubDate) - toTime(a.pubDate));
 }
 

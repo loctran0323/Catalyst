@@ -7,7 +7,7 @@ A Next.js dashboard for retail investors: **watchlist**, **upcoming macro and ti
 - **Auth** — Email/password (and compatible flows) with Supabase Auth
 - **Watchlist** — Tickers drive ticker-tagged headlines and company timeline rows
 - **Timeline** — Merged `market_events`, rolling synthetic macro schedule, and Google News headline rows per symbol (upcoming-only filtering)
-- **News briefing** — Multiple public RSS sources; All / Tickers / topic tabs; stories capped to ~7 days; optional OpenAI-generated summary and bullish/bearish/neutral read
+- **News briefing** — Multiple public RSS sources; All / Tickers / topic tabs; main view shows roughly the last **3 days** (older items on signed-in **Archive** when feeds still carry them); optional OpenAI-generated summary and bullish/bearish/neutral read
 - **Market map** — Treemap-style sector view with Yahoo-backed quotes (best-effort)
 - **Settings** — Digest frequency (daily / weekly / off) and test email when Resend is configured
 - **Auto-refresh** — Dashboard polls server data on an interval while the tab is open (`dynamic` route + client `router.refresh`)

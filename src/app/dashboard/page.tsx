@@ -1,8 +1,15 @@
+import Link from "next/link";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { DashboardDateToolbar } from "@/components/dashboard-date-toolbar";
 import { DashboardQueryError } from "@/components/dashboard-query-error";
 import { DashboardTimelineTabs } from "@/components/dashboard-timeline-tabs";
 import { NewsBriefing } from "@/components/news-briefing";
 import { WatchlistPanel } from "@/components/watchlist-panel";
+import {
+  filterArticlesByPublishedRange,
+  filterEventsByEventDateRange,
+  parseDashboardSearchParams,
+} from "@/lib/archive-range";
 import { fetchMergedDashboardEvents } from "@/lib/events";
 import { getNewsBriefing } from "@/lib/news";
 import { createClient } from "@/lib/supabase/server";
@@ -10,7 +17,13 @@ import { createClient } from "@/lib/supabase/server";
 /** Re-run this page on every `router.refresh()` — avoids stale RSC payload when polling for news/timeline. */
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+type Props = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function DashboardPage({ searchParams }: Props) {
+  const sp = await searchParams;
+  const dashDates = parseDashboardSearchParams(sp);
   const supabase = await createClient();
 
   const { data: watchlists, error: wErr } = await supabase
@@ -51,8 +64,22 @@ export default async function DashboardPage() {
     return <DashboardQueryError context="Loading events" err={err} />;
   }
 
-  const news = await getNewsBriefing({ tickers, limit: 18 });
-  const fetchedAt = new Date().toISOString();
+  if (dashDates.timelineFilter) {
+    events = filterEventsByEventDateRange(
+      events,
+      dashDates.timelineFilter.fromMs,
+      dashDates.timelineFilter.toMs,
+    );
+  }
+
+  let news = await getNewsBriefing({ tickers, limit: 72 });
+  if (dashDates.newsFilter) {
+    news = filterArticlesByPublishedRange(
+      news,
+      dashDates.newsFilter.fromMs,
+      dashDates.newsFilter.toMs,
+    );
+  }
 
   const statCards = [
     { label: "Tickers", value: String(tickers.length) },
@@ -65,11 +92,14 @@ export default async function DashboardPage() {
       <AutoRefresh everyMs={300000} />
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
         <h1 className="text-2xl font-semibold text-white">Market dashboard</h1>
-        <p className="mt-2 max-w-2xl text-[var(--muted)]">
-          Watchlist drives ticker-specific timelines and news. Macro vs tickers tabs separate
-          economy-wide dates from your symbols only; Google News headline rows use watchlist
-          tickers. Extra RSS feeds refresh on a timer.
-        </p>
+        <div className="mt-2 max-w-full overflow-x-auto">
+          <p className="whitespace-nowrap text-sm text-[var(--muted)]">
+            Your watchlist shapes which ticker-tagged headlines and events you see.{" "}
+            <Link href="/dashboard/archive" className="text-[var(--accent)] hover:underline">
+              More and older posts are on Archive.
+            </Link>
+          </p>
+        </div>
         <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
           {statCards.map((stat) => (
             <div key={stat.label} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
@@ -78,18 +108,15 @@ export default async function DashboardPage() {
             </div>
           ))}
         </div>
-        <p className="mt-4 text-[10px] uppercase tracking-wide text-[var(--muted)]">
-          Last fetch{" "}
-          <span className="font-mono normal-case text-[var(--foreground)]">
-            {new Date(fetchedAt).toLocaleTimeString(undefined, {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            })}
-          </span>{" "}
-          · auto-refresh ~5 min (tab open) · RSS may look unchanged if nothing new published
-        </p>
       </div>
+
+      <DashboardDateToolbar
+        key={`${dashDates.toolbar.eventsFromYmd}-${dashDates.toolbar.eventsToYmd}-${dashDates.toolbar.newsFromYmd}-${dashDates.toolbar.newsToYmd}`}
+        eventsFromYmd={dashDates.toolbar.eventsFromYmd}
+        eventsToYmd={dashDates.toolbar.eventsToYmd}
+        newsFromYmd={dashDates.toolbar.newsFromYmd}
+        newsToYmd={dashDates.toolbar.newsToYmd}
+      />
 
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
         <h2 className="text-base font-semibold text-white">Watchlist</h2>

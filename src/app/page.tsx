@@ -4,34 +4,34 @@ import { createClient } from "@/lib/supabase/server";
 
 const features = [
   {
-    title: "Watchlist-first",
+    title: "Home market view (need account)",
     body:
-      "Your symbols control which company-specific headlines and timeline rows appear. Add or remove tickers in a compact strip — no clutter.",
+      "Live ETFs and indices, top gainers/losers and screeners, plus optional tickers to watch. Save your list to your account after you sign up.",
   },
   {
-    title: "Upcoming timeline",
+    title: "Explore",
     body:
-      "See what’s ahead, not what’s past: macro prints (CPI, Fed, housing, and more) on one tab, watchlist-tied events on another. Pulls from your calendar data plus a rolling macro schedule.",
+      "Browse macro timeline and a news briefing as a guest. Heavier personalization and ticker-specific views unlock once you’re signed in.",
   },
   {
-    title: "News briefing",
+    title: "Dashboard workspace",
     body:
-      "Headlines from public RSS feeds: All merges broad and watchlist stories; Tickers isolates your symbols; topic tabs cover the rest. Every item gets a short summary plus a bullish, bearish, or neutral read with rationale.",
+      "Full watchlist, upcoming catalysts (macro + your tickers), and richer news tabs — the main hub after you log in.",
   },
   {
-    title: "Fresh by design",
+    title: "Market map & drill-down",
     body:
-      "Stories older than seven days drop off automatically. While you’re on the dashboard, data refetches on a timer — about every fifteen minutes — so feeds stay current without manual refresh.",
+      "Sector → industry treemap sized by activity; hover for quotes, click a stock for headlines and a short read on why it might be moving.",
   },
   {
-    title: "Market map",
+    title: "News with a take",
     body:
-      "Explore Map without an account, or sign in for a full dashboard. Sector → industry view of large-cap names with recent price change.",
+      "Headlines from RSS with summaries and a bullish, bearish, or neutral angle so you get context fast.",
   },
   {
-    title: "Optional email digest",
+    title: "Settings & digests (need account)",
     body:
-      "In Settings, choose daily or weekly digests when your project has email (Resend) configured — plus a test send to verify your inbox.",
+      "Digest frequency and optional email when your project has mail configured — plus a test send to verify delivery.",
   },
 ] as const;
 
@@ -165,7 +165,21 @@ export default async function HomePage() {
           )}
         </div>
 
-        <ul className="mx-auto mt-20 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto mt-16 max-w-5xl overflow-x-auto px-1 text-center">
+          <p className="inline-block min-w-min whitespace-nowrap text-xs text-[var(--muted)] sm:text-sm">
+            {configured && !signedIn ? (
+              <>
+                Feature cards below summarize what Catalyst does.{" "}
+                <span className="text-amber-200/90">
+                  Heads up: Full functionality is for signed-in users only.
+                </span>
+              </>
+            ) : (
+              <>What you can do with Catalyst — short overview.</>
+            )}
+          </p>
+        </div>
+        <ul className="mx-auto mt-5 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
             <li
               key={f.title}

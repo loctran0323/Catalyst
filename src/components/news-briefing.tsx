@@ -16,9 +16,14 @@ const CATEGORY_TABS: Array<{ id: NewsArticle["category"]; label: string }> = [
 export function NewsBriefing({
   articles,
   itemsPerPage = 2,
+  title = "News briefing",
+  emptyHintTickers = "No watchlist-tagged headlines in the last few days. Add tickers or check All.",
 }: {
   articles: NewsArticle[];
   itemsPerPage?: number;
+  title?: string;
+  /** Shown when Tickers tab is empty. */
+  emptyHintTickers?: string;
 }) {
   const [activeTab, setActiveTab] = useState<BriefingTabId>("all");
   const [page, setPage] = useState(0);
@@ -62,7 +67,7 @@ export function NewsBriefing({
   return (
     <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-white">News briefing</h2>
+        <h2 className="text-lg font-semibold text-white">{title}</h2>
         {filtered.length > itemsPerPage && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-[var(--muted)]">
@@ -110,7 +115,7 @@ export function NewsBriefing({
       {filtered.length === 0 ? (
         <p className="mt-4 text-sm text-[var(--muted)]">
           {activeTab === "tickers"
-            ? "No watchlist-tagged headlines in the last week. Add tickers or check All."
+            ? emptyHintTickers
             : "No matching headlines in this tab right now."}
         </p>
       ) : (

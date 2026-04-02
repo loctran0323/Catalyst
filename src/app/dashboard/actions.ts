@@ -2,6 +2,7 @@
 
 import { sendDigestEmail } from "@/lib/email";
 import { fetchDashboardEvents } from "@/lib/events";
+import { getNewsBriefing } from "@/lib/news";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -25,6 +26,7 @@ export async function addTicker(formData: FormData) {
     throw new Error(error.message);
   }
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/archive");
   revalidatePath("/home");
 }
 
@@ -36,6 +38,7 @@ export async function removeTicker(formData: FormData) {
   const { error } = await supabase.from("watchlist_items").delete().eq("id", itemId);
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/archive");
   revalidatePath("/home");
 }
 
@@ -82,11 +85,15 @@ export async function sendTestDigest() {
     tickers = (items ?? []).map((i) => i.ticker);
   }
 
-  const events = await fetchDashboardEvents(supabase, tickers);
+  const [events, newsArticles] = await Promise.all([
+    fetchDashboardEvents(supabase, tickers),
+    getNewsBriefing({ tickers, limit: 3, candidateCap: 12 }),
+  ]);
   const result = await sendDigestEmail({
     to: user.email,
-    subject: "[Catalyst] Test digest — upcoming events",
+    subject: "[Catalyst] Test digest — briefing & upcoming events",
     events,
+    articles: newsArticles,
   });
 
   if (!result.ok) {

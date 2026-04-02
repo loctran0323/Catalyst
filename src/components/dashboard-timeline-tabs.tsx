@@ -17,17 +17,30 @@ export function DashboardTimelineTabs({
   watchlistItems,
   perPage = 2,
   guestMode = false,
+  /** Past-only events from server; skip upcoming filter (archive page). */
+  pastArchiveMode = false,
+  sectionTitle = "Timeline",
+  sectionSubtitle,
+  readMoreUrlsByEventId,
 }: {
   events: MarketEvent[];
   watchlistItems: WatchlistItem[];
   perPage?: number;
   /** Public explore: no saved watchlist; ticker tab prompts sign-in. */
   guestMode?: boolean;
+  pastArchiveMode?: boolean;
+  sectionTitle?: string;
+  sectionSubtitle?: string;
+  /** Archive: per-event “read coverage” URLs from search. */
+  readMoreUrlsByEventId?: Record<string, string>;
 }) {
   const [tab, setTab] = useState<"macro" | "ticker">("macro");
 
-  const upcoming = useMemo(() => filterUpcomingMarketEvents(events), [events]);
-  const { macro, ticker } = useMemo(() => splitTimeline(upcoming), [upcoming]);
+  const timelineEvents = useMemo(
+    () => (pastArchiveMode ? events : filterUpcomingMarketEvents(events)),
+    [events, pastArchiveMode],
+  );
+  const { macro, ticker } = useMemo(() => splitTimeline(timelineEvents), [timelineEvents]);
 
   const sortedTickers = useMemo(
     () => [...watchlistItems].sort((a, b) => a.ticker.localeCompare(b.ticker)),
@@ -41,10 +54,14 @@ export function DashboardTimelineTabs({
       ? tab === "macro"
         ? guestMode
           ? "No macro events in the current window."
-          : "No macro or economy-wide events in the window yet. Refresh after adding rows in Supabase or when the calendar rolls forward."
+          : pastArchiveMode
+            ? "No past macro events in the window."
+            : "No macro or economy-wide events in the window yet. Refresh after adding rows in Supabase or when the calendar rolls forward."
         : guestMode
           ? "Sign in and add a watchlist to see company-specific and headline rows here."
-          : "No watchlist-tied events yet. Add tickers in Watchlist and create `market_events` rows with those symbols."
+          : pastArchiveMode
+            ? "No past watchlist-tied events in the window."
+            : "No watchlist-tied events yet. Add tickers in Watchlist and create `market_events` rows with those symbols."
       : undefined;
 
   return (
@@ -53,9 +70,13 @@ export function DashboardTimelineTabs({
       perPage={perPage}
       showTickerOnCards={tab === "ticker"}
       emptyMessage={emptyMessage}
+      readMoreUrlsByEventId={readMoreUrlsByEventId}
       header={
         <>
-          <h2 className="text-lg font-semibold text-white">Timeline</h2>
+          <h2 className="text-lg font-semibold text-white">{sectionTitle}</h2>
+          {sectionSubtitle ? (
+            <p className="mt-1 text-xs text-[var(--muted)]">{sectionSubtitle}</p>
+          ) : null}
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"

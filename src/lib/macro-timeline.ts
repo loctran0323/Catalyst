@@ -175,6 +175,45 @@ export function getSyntheticMacroTimeline(now = new Date()): MarketEvent[] {
   });
 }
 
+/**
+ * Rolling “recent past” macro placeholders (mirrors future offsets backward) so the archive
+ * timeline is not empty when the DB has no historical rows.
+ */
+export function getSyntheticMacroTimelinePast(now = new Date(), maxDaysBack = 40): MarketEvent[] {
+  const base = new Date(now);
+  base.setUTCHours(14, 0, 0, 0);
+  const nowMs = now.getTime();
+  const maxAgeMs = maxDaysBack * 24 * 60 * 60 * 1000;
+  const out: MarketEvent[] = [];
+
+  for (const row of MACRO_TEMPLATES) {
+    const eventDate = new Date(base);
+    eventDate.setUTCDate(eventDate.getUTCDate() - row.offsetDays);
+    const t = eventDate.getTime();
+    if (Number.isNaN(t) || t >= nowMs) continue;
+    if (nowMs - t > maxAgeMs) continue;
+
+    const day = eventDate.toISOString().slice(0, 10);
+    const id = crypto
+      .createHash("sha1")
+      .update(`macro-past-${slug(row.title)}-${day}`)
+      .digest("hex")
+      .slice(0, 32);
+    out.push({
+      id: `syn-past-${id}`,
+      ticker: null,
+      title: row.title,
+      event_type: "macro",
+      event_date: eventDate.toISOString(),
+      why_it_matters: row.why_it_matters,
+      watch_for: row.watch_for,
+      created_at: now.toISOString(),
+    });
+  }
+
+  return out;
+}
+
 export function mergeTimelineEvents(
   dbEvents: MarketEvent[],
   synthetic: MarketEvent[],

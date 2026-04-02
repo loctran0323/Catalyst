@@ -11,6 +11,7 @@ export function TimelinePager({
   header,
   showTickerOnCards = false,
   emptyMessage,
+  readMoreUrlsByEventId,
 }: {
   events: MarketEvent[];
   perPage?: number;
@@ -18,13 +19,14 @@ export function TimelinePager({
   /** When true, show the symbol pill on each card (Tickers tab). */
   showTickerOnCards?: boolean;
   emptyMessage?: string;
+  readMoreUrlsByEventId?: Record<string, string>;
 }) {
   const [page, setPage] = useState(0);
   const pageCount = Math.max(1, Math.ceil(events.length / perPage));
 
   useEffect(() => {
     setPage(0);
-  }, [events, showTickerOnCards]);
+  }, [events, showTickerOnCards, readMoreUrlsByEventId]);
 
   useEffect(() => {
     setPage((p) => Math.min(p, pageCount - 1));
@@ -71,7 +73,11 @@ export function TimelinePager({
         <ul className="grid gap-4">
           {slice.map((event) => (
             <li key={event.id}>
-              <EventCard event={event} showTickerBadge={showTickerOnCards} />
+              <EventCard
+                event={event}
+                showTickerBadge={showTickerOnCards}
+                readMoreUrl={readMoreUrlsByEventId?.[event.id] ?? null}
+              />
             </li>
           ))}
         </ul>

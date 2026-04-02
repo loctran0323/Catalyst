@@ -9,10 +9,13 @@ const typeStyles: Record<string, string> = {
 export function EventCard({
   event,
   showTickerBadge = false,
+  readMoreUrl,
 }: {
   event: MarketEvent;
   /** Show symbol pill (Tickers timeline tab only). */
   showTickerBadge?: boolean;
+  /** Past archive: opens coverage in a new tab (article or news search). */
+  readMoreUrl?: string | null;
 }) {
   const when = new Date(event.event_date);
   const typeClass = typeStyles[event.event_type] ?? "bg-zinc-500/15 text-zinc-300 ring-zinc-500/30";
@@ -45,6 +48,21 @@ export function EventCard({
           )}
         </div>
       </div>
+      {readMoreUrl ? (
+        <div className="mt-4">
+          <a
+            href={readMoreUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--accent)] hover:underline"
+          >
+            Read coverage
+            <span aria-hidden className="text-xs opacity-80">
+              ↗
+            </span>
+          </a>
+        </div>
+      ) : null}
       <div className="mt-4 space-y-3 text-sm leading-relaxed">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">

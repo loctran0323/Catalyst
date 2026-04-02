@@ -33,6 +33,12 @@ export function AppNav({
                 Map
               </Link>
               <Link
+                href="/dashboard/archive"
+                className="text-[var(--muted)] transition hover:text-white"
+              >
+                Archive
+              </Link>
+              <Link
                 href="/dashboard/settings"
                 className="text-[var(--muted)] transition hover:text-white"
               >

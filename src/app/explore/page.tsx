@@ -25,7 +25,7 @@ export default async function ExplorePage() {
   const mapHref = isAuthenticated ? "/dashboard/map" : "/explore/map";
 
   const events = getGuestTimelineEvents();
-  const news = await getNewsBriefing({ tickers: [], limit: 18 });
+  const news = await getNewsBriefing({ tickers: [], limit: 36 });
   const fetchedAt = new Date().toISOString();
   const watchlistItems: WatchlistItem[] = [];
 
