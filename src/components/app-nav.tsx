@@ -38,12 +38,6 @@ export function AppNav({
               >
                 Archive
               </Link>
-              <Link
-                href="/dashboard/settings"
-                className="text-[var(--muted)] transition hover:text-white"
-              >
-                Settings
-              </Link>
               {email && (
                 <span className="hidden text-[var(--muted)] sm:inline">{email}</span>
               )}

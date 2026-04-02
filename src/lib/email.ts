@@ -86,6 +86,23 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
+/** Resend blocks non–account-owner recipients when using the default testing `from` address. */
+function formatResendRecipientError(message: string): string {
+  const m = message.toLowerCase();
+  if (
+    m.includes("only send testing emails") ||
+    m.includes("verify a domain") ||
+    m.includes("your own email address")
+  ) {
+    return (
+      "Resend only delivers test sends from onboarding@resend.dev to your Resend login email. " +
+      "To email any signed-in user, verify a domain at https://resend.com/domains and set " +
+      "RESEND_FROM_EMAIL (e.g. Digest <digest@yourdomain.com>) in your environment, then redeploy."
+    );
+  }
+  return message;
+}
+
 export async function sendDigestEmail(params: {
   to: string;
   subject: string;
@@ -121,7 +138,7 @@ ${eventsHtml}
     html: `<div style="font-family:system-ui,sans-serif;max-width:560px;color:${digestPageHeading};">${body}</div>`,
   });
   if (error) {
-    return { ok: false, error: error.message };
+    return { ok: false, error: formatResendRecipientError(error.message) };
   }
   return { ok: true };
 }

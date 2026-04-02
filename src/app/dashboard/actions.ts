@@ -57,7 +57,7 @@ export async function updateDigest(formData: FormData) {
     .update({ digest_frequency: frequency })
     .eq("id", user.id);
   if (error) throw new Error(error.message);
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard");
 }
 
 export async function sendTestDigest() {
@@ -66,7 +66,7 @@ export async function sendTestDigest() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user?.email) {
-    redirect("/dashboard/settings?digest=error&reason=no_email");
+    redirect("/dashboard");
   }
 
   const { data: watchlists } = await supabase
@@ -97,9 +97,7 @@ export async function sendTestDigest() {
   });
 
   if (!result.ok) {
-    redirect(
-      `/dashboard/settings?digest=error&reason=${encodeURIComponent(result.error)}`,
-    );
+    redirect("/dashboard");
   }
-  redirect("/dashboard/settings?digest=sent");
+  redirect("/dashboard");
 }

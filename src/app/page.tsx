@@ -28,11 +28,6 @@ const features = [
     body:
       "Headlines from RSS with summaries and a bullish, bearish, or neutral angle so you get context fast.",
   },
-  {
-    title: "Settings & digests (need account)",
-    body:
-      "Digest frequency and optional email when your project has mail configured — plus a test send to verify delivery.",
-  },
 ] as const;
 
 export const dynamic = "force-dynamic";
