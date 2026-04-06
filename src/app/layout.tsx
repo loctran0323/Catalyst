@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Catalyst — watchlist, timeline & market news",
+  title: "Alpha Brief — watchlist, timeline & market news",
   description:
-    "Upcoming macro and ticker events, RSS news with AI-style market takes, sector map, and optional email digests — built around your watchlist.",
+    "Your alpha, briefly: macro and ticker timeline, RSS news with market takes, sector map, optional digests — built around your watchlist.",
 };
 
 export default function RootLayout({

@@ -5,9 +5,15 @@ import { NextResponse } from "next/server";
  * Full batch digests need SUPABASE_SERVICE_ROLE_KEY + listing users (extend later).
  */
 export async function GET(request: Request) {
+  const secret = process.env.CRON_SECRET?.trim();
+  if (!secret) {
+    return NextResponse.json(
+      { error: "Cron disabled: set CRON_SECRET in the deployment environment." },
+      { status: 503 },
+    );
+  }
   const auth = request.headers.get("authorization");
-  const secret = process.env.CRON_SECRET;
-  if (secret && auth !== `Bearer ${secret}`) {
+  if (auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

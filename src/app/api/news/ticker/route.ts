@@ -1,13 +1,15 @@
 import { getNewsForTicker } from "@/lib/news";
+import { isValidTickerSymbol, normalizeTickerSymbol } from "@/lib/ticker-symbol";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const symbol = searchParams.get("symbol");
-  if (!symbol || !symbol.trim()) {
-    return NextResponse.json({ error: "symbol is required" }, { status: 400 });
+  const raw = searchParams.get("symbol");
+  const symbol = normalizeTickerSymbol(raw ?? "");
+  if (!symbol || !isValidTickerSymbol(symbol)) {
+    return NextResponse.json({ error: "Invalid or missing symbol" }, { status: 400 });
   }
 
-  const articles = await getNewsForTicker(symbol.trim(), 10);
+  const articles = await getNewsForTicker(symbol, 10);
   return NextResponse.json({ articles });
 }

@@ -47,14 +47,14 @@ export default async function HomePage() {
     } = await supabase.auth.getUser();
     signedIn = Boolean(user);
   }
-  const catalystHref = signedIn ? "/home" : "/";
+  const brandHomeHref = signedIn ? "/home" : "/";
 
   return (
     <div className="relative min-h-screen overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#1a2332_0%,_transparent_55%)]" />
       <header className="relative z-10 mx-auto flex max-w-5xl items-center justify-between px-6 py-6 md:py-8">
-        <Link href={catalystHref} className="text-lg font-semibold tracking-tight text-white">
-          Catalyst
+        <Link href={brandHomeHref} className="text-lg font-semibold tracking-tight text-white">
+          Alpha Brief
         </Link>
         <nav className="flex items-center gap-5 text-sm">
           {configured ? (
@@ -104,7 +104,7 @@ export default async function HomePage() {
             Welcome
           </h1>
           <p className="mx-auto mt-5 max-w-md text-pretty text-base leading-relaxed text-[var(--muted)] md:text-lg">
-            Your dashboard for upcoming catalysts, headlines, and a sector map — built for context, not noise.
+            Your alpha, briefly. Signal first, noise last.
           </p>
 
           {configured ? (
@@ -169,13 +169,13 @@ export default async function HomePage() {
           <p className="inline-block min-w-min whitespace-nowrap text-xs text-[var(--muted)] sm:text-sm">
             {configured && !signedIn ? (
               <>
-                Feature cards below summarize what Catalyst does.{" "}
+                Feature cards below summarize what Alpha Brief does.{" "}
                 <span className="text-amber-200/90">
                   Heads up: Full functionality is for signed-in users only.
                 </span>
               </>
             ) : (
-              <>Six things Catalyst does — quick tour below.</>
+              <>Six things Alpha Brief does — quick tour below.</>
             )}
           </p>
         </div>

@@ -12,7 +12,7 @@ export function AppNav({
     <header className="border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-4">
         <Link href="/home" className="text-lg font-semibold text-white">
-          Catalyst
+          Alpha Brief
         </Link>
         <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
           <Link href="/home" className="text-[var(--muted)] transition hover:text-white">

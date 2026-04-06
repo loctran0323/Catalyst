@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchYahooChartSnapshot } from "@/lib/market-map-data";
+import { isValidTickerSymbol, normalizeTickerSymbol } from "@/lib/ticker-symbol";
 
 export const dynamic = "force-dynamic";
 
@@ -12,8 +13,8 @@ export async function GET(request: Request) {
     ...new Set(
       raw
         .split(/[,\s]+/)
-        .map((s) => s.trim().toUpperCase().replace(/[^A-Z0-9.-]/g, ""))
-        .filter(Boolean),
+        .map((s) => normalizeTickerSymbol(s))
+        .filter((s) => s.length > 0 && isValidTickerSymbol(s)),
     ),
   ].slice(0, MAX);
 

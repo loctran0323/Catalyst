@@ -1,11 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/config";
-
-function safeNextPath(raw: string | null): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/home";
-  return raw;
-}
+import { safeAuthRedirectPath } from "@/lib/safe-redirect";
 
 /**
  * PKCE / email-confirm links must attach session cookies to this response.
@@ -15,7 +11,7 @@ function safeNextPath(raw: string | null): string {
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const next = safeNextPath(url.searchParams.get("next"));
+  const next = safeAuthRedirectPath(url.searchParams.get("next"));
 
   if (!code) {
     return NextResponse.redirect(new URL("/home", url.origin));

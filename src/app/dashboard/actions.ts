@@ -91,7 +91,7 @@ export async function sendTestDigest() {
   ]);
   const result = await sendDigestEmail({
     to: user.email,
-    subject: "[Catalyst] Test digest — briefing & upcoming events",
+    subject: "[Alpha Brief] Test digest — briefing & upcoming events",
     events,
     articles: newsArticles,
   });

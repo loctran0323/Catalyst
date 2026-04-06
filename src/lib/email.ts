@@ -124,8 +124,8 @@ export async function sendDigestEmail(params: {
   const newsHtml = formatNewsBriefingDigestHtml(articles);
   const eventsHtml = formatEventsDigestHtml(events);
   const body = `
-<h1 style="${digestPageH1}">Your market digest</h1>
-<p style="font-family:system-ui,sans-serif;color:${digestPageMuted};font-size:14px;margin:0 0 8px;line-height:1.45;">Top headlines from your news briefing, then upcoming catalysts.</p>
+<h1 style="${digestPageH1}">Alpha Brief — your digest</h1>
+<p style="font-family:system-ui,sans-serif;color:${digestPageMuted};font-size:14px;margin:0 0 8px;line-height:1.45;">Headlines from your briefing, then upcoming catalysts on your timeline.</p>
 <h2 style="${digestPageH2}">News briefing</h2>
 ${newsHtml}
 <h2 style="${digestPageH2}">Upcoming events</h2>

@@ -17,7 +17,7 @@ export function AuthShell({
           href="/"
           className="mb-6 text-sm text-[var(--muted)] transition hover:text-white"
         >
-          ← Catalyst
+          ← Alpha Brief
         </Link>
         <div className="rounded-2xl border border-white/[0.12] bg-[var(--card)]/85 p-8 shadow-xl shadow-black/25 backdrop-blur-md">
           <h1 className="text-3xl font-extralight tracking-tight text-white">{title}</h1>

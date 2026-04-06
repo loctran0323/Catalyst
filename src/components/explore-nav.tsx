@@ -5,7 +5,7 @@ export function ExploreNav() {
     <header className="border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-6 py-4">
         <Link href="/" className="text-lg font-semibold text-white">
-          Catalyst
+          Alpha Brief
         </Link>
         <nav className="flex flex-wrap items-center gap-4 text-sm sm:gap-6">
           <Link href="/explore" className="text-white">

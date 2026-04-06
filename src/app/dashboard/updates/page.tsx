@@ -32,7 +32,7 @@ export default function DashboardUpdatesPage() {
   return (
     <div className="mx-auto max-w-2xl pb-12">
       <header className="border-b border-[var(--border)] pb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--faint)]">Catalyst</p>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--faint)]">Alpha Brief</p>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
           Updates
         </h1>

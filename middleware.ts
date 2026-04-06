@@ -14,6 +14,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const isCron = pathname.startsWith("/api/cron");
   const isPublic =
     pathname === "/" ||
     pathname === "/home" ||
@@ -32,7 +33,7 @@ export async function middleware(request: NextRequest) {
     user = session.user;
   } catch (err) {
     console.error("[middleware] Supabase session failed:", err);
-    if (!isPublic) {
+    if (!isPublic && !isCron) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("next", pathname);
@@ -42,7 +43,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (!isPublic && !user) {
+  if (!isPublic && !isCron && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);

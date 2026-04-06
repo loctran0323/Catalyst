@@ -1,8 +1,8 @@
-# Catalyst
+# Alpha Brief
 
 A Next.js dashboard for retail investors: **watchlist**, **upcoming macro and ticker timeline**, **RSS news briefing** (with optional AI summaries), and a **sector → industry market map**. Auth and data live in **Supabase**; optional digests via **Resend**.
 
-**Production:** [catalyst-markets.vercel.app](https://catalyst-markets.vercel.app)
+**Example deployment:** [catalyst-markets.vercel.app](https://catalyst-markets.vercel.app) (update when you change domains)
 
 ## Features
 
@@ -86,7 +86,7 @@ Never commit **`.env.local`** or service role keys.
 
 1. Push this repo to GitHub (or GitLab / Bitbucket).
 2. Import the repo in [Vercel](https://vercel.com) as a Next.js project.
-3. Add the same env vars as in `.env.example`. Set `NEXT_PUBLIC_SITE_URL` to your deployment origin (e.g. `https://catalyst-markets.vercel.app`, no trailing slash).
+3. Add the same env vars as in `.env.example`. Set `NEXT_PUBLIC_SITE_URL` to your deployment origin (HTTPS, no trailing slash).
 4. In Supabase **Authentication → URL configuration**, set **Site URL** and **Redirect URLs** to that same origin (including `/auth/callback` if you use that route).
 
 **Cron:** `vercel.json` schedules `/api/cron/digest` daily. Set `CRON_SECRET` in Vercel; confirm cron availability for your Vercel plan. The route is a stub you can extend for batch digests.

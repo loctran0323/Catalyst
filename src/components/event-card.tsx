@@ -19,7 +19,7 @@ const typeStyles: Record<
   catalyst: {
     bar: "bg-amber-400",
     badge: "border-amber-400/35 bg-amber-500/12 text-amber-100",
-    label: "Catalyst",
+    label: "Key event",
   },
 };
 

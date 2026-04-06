@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import type { MarketEvent } from "@/types/database";
 import { rssFirstItem } from "@/lib/rss-parse";
 
-const UA = "Mozilla/5.0 (compatible; CatalystDashboard/1.0)";
+const UA = "Mozilla/5.0 (compatible; AlphaBrief/1.0)";
 
 async function latestHeadlineForSymbol(symbol: string): Promise<{
   title: string;
