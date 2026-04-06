@@ -2,7 +2,11 @@
 
 A Next.js dashboard for retail investors: **watchlist**, **upcoming macro and ticker timeline**, **RSS news briefing** (with optional AI summaries), and a **sector → industry market map**. Auth and data live in **Supabase**; optional digests via **Resend**.
 
-**Example deployment:** [alpha-brief.vercel.app](https://alpha-brief.vercel.app/) 
+**Live app:** [alpha-brief.vercel.app](https://alpha-brief.vercel.app/)
+
+## Updates
+
+- **March 2026** — I renamed the website and product from **Catalyst** to **Alpha Brief**. The public deployment, repo metadata, and docs now use the new name and [alpha-brief.vercel.app](https://alpha-brief.vercel.app/).
 
 ## Features
 
@@ -86,8 +90,8 @@ Never commit **`.env.local`** or service role keys.
 
 1. Push this repo to GitHub (or GitLab / Bitbucket).
 2. Import the repo in [Vercel](https://vercel.com) as a Next.js project.
-3. Add the same env vars as in `.env.example`. Set `NEXT_PUBLIC_SITE_URL` to your deployment origin (HTTPS, no trailing slash).
-4. In Supabase **Authentication → URL configuration**, set **Site URL** and **Redirect URLs** to that same origin (including `/auth/callback` if you use that route).
+3. Add the same env vars as in `.env.example`. For production, set `NEXT_PUBLIC_SITE_URL` to `https://alpha-brief.vercel.app` (HTTPS, no trailing slash), or your custom domain if you add one.
+4. In Supabase **Authentication → URL configuration**, set **Site URL** and **Redirect URLs** to that same origin (including `https://alpha-brief.vercel.app/auth/callback` and any preview URLs you use).
 
 **Cron:** `vercel.json` schedules `/api/cron/digest` daily. Set `CRON_SECRET` in Vercel; confirm cron availability for your Vercel plan. The route is a stub you can extend for batch digests.
 
