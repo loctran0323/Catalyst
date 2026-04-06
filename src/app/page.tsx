@@ -106,6 +106,9 @@ export default async function HomePage() {
           <p className="mx-auto mt-5 max-w-md text-pretty text-base leading-relaxed text-[var(--muted)] md:text-lg">
             Your alpha, briefly. Signal first, noise last.
           </p>
+          <p className="mx-auto mt-3 max-w-md text-center text-xs leading-relaxed text-[var(--faint)]">
+            Recently rebranded from Catalyst to Alpha Brief — same app, new name.
+          </p>
 
           {configured ? (
             signedIn ? (

@@ -11,6 +11,7 @@ const UPDATE_GROUPS: { period: string; bullets: string[] }[] = [
   {
     period: "April 2026",
     bullets: [
+      "Recently rebranded from Catalyst to Alpha Brief — same product, new name and site URL.",
       "Market map: larger default view, zoom range, clipped labels, short sector/industry names (no cut-off with …).",
       "Macro timeline: fewer duplicate events, Eastern-time dates, tier-1 releases only (up to ~8 in 30 days, fewer if the calendar is light).",
       "News tags: better bullish / bearish / neutral (e.g. falling commodity prices skew bearish).",
